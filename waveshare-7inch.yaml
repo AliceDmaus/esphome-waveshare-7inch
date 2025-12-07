@@ -1,0 +1,45 @@
+# MDI Icon Substitutions ZUERST definieren [6]
+substitutions:
+  device_internal_name: waveshare-7inch
+  device_friendly_name: Waveshare 7inch
+  # MDI Icons (Benötigt für ui_main.yaml)
+  mdi_thermometer: "\U000F050F"
+  mdi_sofa: "\U000F04B9"
+  mdi_timer: "\U000F051B"
+  mdi_washing_machine: "\U000F072A"
+  backlight_pin: GPIO16
+
+esphome:
+  name: ${device_internal_name}
+  friendly_name: ${device_friendly_name}
+
+  platformio_options:
+    build_flags: "-DBOARD_HAS_PSRAM"
+    board_build.arduino.memory_type: qio_opi
+    board_build.flash_mode: dio
+    board_upload.maximum_ram_size: 524288
+
+  # START LOGIK
+  on_boot:
+    priority: 600
+    then:
+      - delay: 500ms
+      # 1. Alten Chip aktivieren (Löst den Hardware-Konflikt)
+      - switch.turn_on: old_backlight_switch
+      # 2. Neues Licht auf 100%
+      - light.turn_on:
+          id: lcdbacklight
+          brightness: 100%
+
+# Globales Hintergrundbild definition [6]
+image:
+  - file: "images/background.jpg"
+    id: image_background
+    type: RGB565
+
+# Packages
+packages:
+  base: !include packages/base.yaml
+  display: !include packages/display.yaml
+  ui_main: !include packages/ui_main.yaml
+  ui_sensors: !include packages/ui_sensors.yaml

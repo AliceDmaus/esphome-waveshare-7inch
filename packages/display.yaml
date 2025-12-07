@@ -1,0 +1,105 @@
+# Display Hardware & Fonts (Mit Fix für Hardware-Konflikt)
+
+# 1. FONTS (Mit Glyphsets [8])
+font:
+  - file: "gfonts://Roboto"
+    id: roboto_64
+    size: 64
+    glyphs: "0123456789.,°- %C"
+  - file: "gfonts://Roboto"
+    id: roboto_70
+    size: 70
+    glyphsets: [GF_Latin_Core]
+  - file: "gfonts://Roboto"
+    id: roboto_clock_huge
+    size: 120
+    glyphs: ":0123456789"
+  - file: "fonts/materialdesignicons-webfont.ttf"
+    id: icons_70
+    size: 70
+    bpp: 4
+    glyphs: ["\U000F050F", "\U000F02DC", "\U000F0AAC", "\U000F072A", "\U000F0409", "\U000F0599", "\U000F0590", "\U000F0595", "\U000F0597", "\U000F0596", "\U000F0598", "\U000F067F", "\U000F0591", "\U000F0594", "\U000F059D", "\U000F0593", "\U000F051B", "\U000F04B9"]
+
+# 2. NEUES PWM LIGHT
+output:
+  - platform: ledc
+    pin: GPIO16
+    id: backlight_pwm
+    min_power: 0.07
+    zero_means_zero: true
+    frequency: 1000Hz
+
+light:
+  - platform: monochromatic
+    output: backlight_pwm
+    id: lcdbacklight
+    name: "Display Helligkeit"
+    icon: mdi:brightness-6
+    restore_mode: ALWAYS_ON
+    default_transition_length: 0.5s
+    gamma_correct: 1.8
+
+# 3. SWITCHES (Hier muss der ALTE wieder rein!)
+switch:
+  # --- WICHTIG: Der "Konflikt-Löser" ---
+  # Zwingt den alten Chip auf HIGH, damit PWM funktioniert
+  - platform: gpio
+    id: old_backlight_switch
+    internal: true # Muss nicht in HomeAssistant auftauchen
+    pin:
+      ch422g: ch422g_hub
+      number: 2 # [12]
+      mode:
+        output: true
+      inverted: false
+    restore_mode: ALWAYS_ON
+
+  # Antiburn (Bleibt erhalten)
+  - platform: template
+    name: Antiburn
+    id: switch_antiburn
+    icon: mdi:television-shimmer
+    optimistic: true
+    entity_category: "config"
+    turn_on_action:
+      - if: {condition: lvgl.is_paused, then: [lvgl.resume, lvgl.widget.redraw]}
+      - lvgl.pause: {show_snow: true}
+    turn_off_action:
+      - if: {condition: lvgl.is_paused, then: [lvgl.resume, lvgl.widget.redraw]}
+
+# 4. TREIBER
+touchscreen:
+  platform: gt911
+  id: my_touchscreen
+  display: my_display
+  i2c_id: bus_a
+  interrupt_pin: GPIO4
+  reset_pin: {ch422g: ch422g_hub, number: 1, mode: OUTPUT}
+  on_release:
+    then:
+      - if: {condition: lvgl.is_paused, then: [lvgl.resume, lvgl.widget.redraw]}
+
+display:
+  - platform: rpi_dpi_rgb
+    id: my_display
+    update_interval: never
+    auto_clear_enabled: false
+    color_order: RGB
+    pclk_frequency: 16MHz
+    dimensions: {width: 800, height: 480}
+    de_pin: 5
+    hsync_pin: 46
+    vsync_pin: 3
+    pclk_pin: 7
+    pclk_inverted: true
+    reset_pin: {ch422g: ch422g_hub, number: 3}
+    hsync_back_porch: 8
+    hsync_front_porch: 8
+    hsync_pulse_width: 4
+    vsync_back_porch: 16
+    vsync_front_porch: 16
+    vsync_pulse_width: 4
+    data_pins:
+      red: [1, 2, 42, 41, 40]
+      blue: [14, 38, 18, 17, 10]
+      green: [39, 0, 45, 48, 47, 21]

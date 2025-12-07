@@ -1,0 +1,10 @@
+# ESPHome Secrets (WLAN Passwörter, API Keys)
+secrets.yaml
+
+# Build Ordner (braucht man nicht hochladen, spart Platz)
+.esphome/
+.pio/
+build/
+
+# Systemdateien
+.DS_Store

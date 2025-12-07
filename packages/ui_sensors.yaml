@@ -1,0 +1,193 @@
+# Home Assistant Sensoren
+
+sensor:
+  # Außentemperatur mit Farbwechsel
+  - platform: homeassistant
+    id: temp_aussen_sensor
+    entity_id: sensor.thermometer_aussen_temperature
+    on_value:
+      - lambda: |-
+          // 1. Farbe berechnen
+          lv_color_t color;
+          if (x <= 0) {
+            color = lv_color_hex(0x80D8FF); // Kalt: Helles Eisblau
+          } else if (x <= 10) {
+            color = lv_color_hex(0x00B4D8); // Kühl: Hellblau
+          } else if (x <= 20) {
+            color = lv_color_hex(0xFFFFFF); // Mild: Weiß
+          } else if (x <= 28) {
+            color = lv_color_hex(0xFFA500); // Warm: Orange
+          } else {
+            color = lv_color_hex(0xFF0000); // Heiß: Rot
+          }
+
+          // 2. Farbe anwenden (FEHLERBEHEBUNG: ->obj entfernt)
+          // Wir übergeben das ID-Objekt direkt an LVGL
+          lv_obj_set_style_text_color(id(weather_condition), color, 0);
+          lv_obj_set_style_text_color(id(temp_aussen), color, 0);
+
+      # 3. Text aktualisieren
+      - lvgl.label.update:
+          id: temp_aussen
+          text: !lambda |-
+            static char buf[10];
+            snprintf(buf, sizeof(buf), "%.1f°C", x);
+            return buf;
+
+  # Wohnzimmer-Temperatur
+  - platform: homeassistant
+    id: temp_wohnzimmer_sensor
+    entity_id: sensor.thermometer_wohnzimmer_temperature
+    on_value:
+      - lvgl.label.update:
+          id: temp_wohnzimmer
+          text: !lambda |-
+            static char buf[10];
+            snprintf(buf, sizeof(buf), "%.1f°C", x);
+            return buf;
+
+text_sensor:
+  # Wetter-Zustand (Bestehend aus [5])
+  - platform: homeassistant
+    id: weather_state
+    entity_id: weather.leipzig_holzhausen
+    on_value:
+      - lvgl.label.update:
+          id: weather_condition
+          text: !lambda |-
+            std::string state = x;
+            if (state == "sunny") return "\U000F0599";
+            if (state == "cloudy") return "\U000F0590";
+            if (state == "partlycloudy") return "\U000F0595";
+            if (state == "rainy") return "\U000F0597";
+            if (state == "pouring") return "\U000F0596";
+            if (state == "snowy") return "\U000F0598";
+            if (state == "snowy-rainy") return "\U000F067F";
+            if (state == "fog") return "\U000F0591";
+            if (state == "clear-night") return "\U000F0594";
+            return "\U000F0590";
+
+  # 1. Haupt-Logik: Status + Übersetzung
+  - platform: homeassistant
+    id: washer_status_sensor
+    entity_id: sensor.waschtrockner_betriebszustand
+    internal: true
+    on_value: &update_display
+      - lvgl.label.update:
+          id: washer_time
+          text: !lambda |-
+            std::string status = id(washer_status_sensor).state;
+            std::string time_str = id(washer_time_sensor).state;
+
+            if (status == "inactive" || status == "ready") return "Bereit";
+            if (status == "finished") return "Fertig";
+            if (status == "pause") return "Pause";
+            if (status == "error" || status == "aborting") return "Prüfen!";
+
+            // --- BERECHNUNG (Bleibt gleich wie beim letzten Mal) ---
+            if (status == "run" || status == "delayedstart") {
+              if (time_str.length() >= 19) {
+                int Y, M, D, h, m, s;
+                if (sscanf(time_str.c_str(), "%d-%d-%dT%d:%d:%d", &Y, &M, &D, &h, &m, &s) == 6) {
+
+                    // 1. Dauer berechnen (UTC Vergleich)
+                    auto now_utc = id(esptime).utcnow();
+
+                    int a1 = (14 - M) / 12;
+                    int y1 = Y + 4800 - a1;
+                    int m1 = M + 12 * a1 - 3;
+                    int jdn_target = D + (153 * m1 + 2) / 5 + 365 * y1 + y1 / 4 - y1 / 100 + y1 / 400 - 32045;
+
+                    int a2 = (14 - now_utc.month) / 12;
+                    int y2 = now_utc.year + 4800 - a2;
+                    int m2 = now_utc.month + 12 * a2 - 3;
+                    int jdn_now = now_utc.day_of_month + (153 * m2 + 2) / 5 + 365 * y2 + y2 / 4 - y2 / 100 + y2 / 400 - 32045;
+
+                    long diff_days = jdn_target - jdn_now;
+                    long target_sec_of_day = h * 3600 + m * 60 + s;
+                    long now_sec_of_day = now_utc.hour * 3600 + now_utc.minute * 60 + now_utc.second;
+
+                    long total_diff = (diff_days * 86400) + (target_sec_of_day - now_sec_of_day);
+
+                    // --- AUSGABE FORMATIEREN (NEU) ---
+                    if (total_diff > 0) {
+                      if (total_diff > 360000) return "Datum?";
+
+                      // A: Dauer Stunden/Minuten
+                      int rh = total_diff / 3600;
+                      int rm = (total_diff % 3600) / 60;
+
+                      // B: Fertig-Uhrzeit berechnen (Lokalzeit + Restdauer)
+                      auto now_local = id(esptime).now(); // Lokale Zeit holen
+
+                      // Lokale Zeit in Sekunden des Tages umrechnen und Restdauer addieren
+                      long end_time_seconds = (now_local.hour * 3600 + now_local.minute * 60 + now_local.second) + total_diff;
+
+                      // Tagessprung behandeln (Modulo 24h)
+                      while (end_time_seconds >= 86400) end_time_seconds -= 86400;
+
+                      int end_h = end_time_seconds / 3600;
+                      int end_m = (end_time_seconds % 3600) / 60;
+
+                      char buf[32];
+                      // Format: "17:30 / 1:45" (Endzeit / Dauer)
+                      snprintf(buf, sizeof(buf), "%d:%02d / %d:%02d", end_h, end_m, rh, rm);
+
+                      if (status == "delayedstart") return std::string("-> ") + buf;
+                      return std::string(buf);
+                    } else {
+                      return "Gleich...";
+                    }
+                }
+              }
+              return "Läuft";
+            }
+            return status;
+
+  # 2. Sensor für die Endzeit
+  # Wenn sich die Zeit ändert, rufen wir einfach wieder die Logik von oben auf (*update_display)
+  - platform: homeassistant
+    id: washer_time_sensor
+    entity_id: sensor.waschtrockner_programm_endzeit
+    internal: true
+    on_value: *update_display # <--- VERWEIS AUF ANKER (Fix für den Fehler)
+
+  # NEU: Überwacht den STATUS des Timers (Active/Idle/Paused)
+  - platform: homeassistant
+    id: timer_timer_state
+    entity_id: timer.waveshare_display
+    internal: true
+    on_value:
+      - lambda: |-
+          std::string status = x;
+          // Wenn Status "active" ist, Schalter auf AN setzen
+          if (status == "active") {
+             id(timer_timer_active) = true;
+          } else {
+             // Bei "idle" oder "paused" Schalter auf AUS
+             id(timer_timer_active) = false;
+             // Bei "idle" auch Zeit nullen
+             if (status == "idle") {
+               id(timer_remaining_seconds) = 0;
+             }
+          }
+
+  # OPTIMIERT: Überwacht die RESTZEIT (synchronisiert die Sekunden)
+  - platform: homeassistant
+    id: timer_timer_remaining
+    entity_id: timer.waveshare_display
+    attribute: remaining
+    internal: true
+    on_value:
+      - lambda: |-
+          // Parsing der Zeit von HA (z.B. "0:15:00")
+          std::string time_str = x;
+          if (time_str.empty() || time_str == "None" || time_str == "unavailable") return;
+
+          int hours = 0, mins = 0, secs = 0;
+          if (sscanf(time_str.c_str(), "%d:%d:%d", &hours, &mins, &secs) == 3) {
+            id(timer_remaining_seconds) = hours * 3600 + mins * 60 + secs;
+          }
+          else if (sscanf(time_str.c_str(), "%d:%d", &mins, &secs) == 2) {
+            id(timer_remaining_seconds) = mins * 60 + secs;
+          }
