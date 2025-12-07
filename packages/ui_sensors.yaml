@@ -76,63 +76,58 @@ text_sensor:
       - lvgl.label.update:
           id: washer_time
           text: !lambda |-
-            std::string status = id(washer_status_sensor).state;
+            std::string status = id(washer_status_sensor).state; 
             std::string time_str = id(washer_time_sensor).state;
-
+            
+            // 1. Einfache Status-Sachen
             if (status == "inactive" || status == "ready") return "Bereit";
             if (status == "finished") return "Fertig";
             if (status == "pause") return "Pause";
             if (status == "error" || status == "aborting") return "Prüfen!";
 
-            // --- BERECHNUNG (Bleibt gleich wie beim letzten Mal) ---
+            // 2. ENDZEIT BERECHNEN
             if (status == "run" || status == "delayedstart") {
               if (time_str.length() >= 19) {
                 int Y, M, D, h, m, s;
+                // Parse ISO String (UTC)
                 if (sscanf(time_str.c_str(), "%d-%d-%dT%d:%d:%d", &Y, &M, &D, &h, &m, &s) == 6) {
-
-                    // 1. Dauer berechnen (UTC Vergleich)
-                    auto now_utc = id(esptime).utcnow();
-
+                    
+                    // --- Tage berechnen (JDN Formel) ---
+                    // Ziel (UTC)
                     int a1 = (14 - M) / 12;
                     int y1 = Y + 4800 - a1;
                     int m1 = M + 12 * a1 - 3;
                     int jdn_target = D + (153 * m1 + 2) / 5 + 365 * y1 + y1 / 4 - y1 / 100 + y1 / 400 - 32045;
-
+                    
+                    // Heute (UTC)
+                    auto now_utc = id(esptime).utcnow();
                     int a2 = (14 - now_utc.month) / 12;
                     int y2 = now_utc.year + 4800 - a2;
                     int m2 = now_utc.month + 12 * a2 - 3;
                     int jdn_now = now_utc.day_of_month + (153 * m2 + 2) / 5 + 365 * y2 + y2 / 4 - y2 / 100 + y2 / 400 - 32045;
 
+                    // Differenz in Sekunden
                     long diff_days = jdn_target - jdn_now;
-                    long target_sec_of_day = h * 3600 + m * 60 + s;
-                    long now_sec_of_day = now_utc.hour * 3600 + now_utc.minute * 60 + now_utc.second;
+                    long target_sec_day = h * 3600 + m * 60 + s;
+                    long now_sec_day = now_utc.hour * 3600 + now_utc.minute * 60 + now_utc.second;
+                    long total_diff = (diff_days * 86400) + (target_sec_day - now_sec_day);
 
-                    long total_diff = (diff_days * 86400) + (target_sec_of_day - now_sec_of_day);
-
-                    // --- AUSGABE FORMATIEREN (NEU) ---
-                    if (total_diff > 0) {
-                      if (total_diff > 360000) return "Datum?";
-
-                      // A: Dauer Stunden/Minuten
-                      int rh = total_diff / 3600;
-                      int rm = (total_diff % 3600) / 60;
-
-                      // B: Fertig-Uhrzeit berechnen (Lokalzeit + Restdauer)
-                      auto now_local = id(esptime).now(); // Lokale Zeit holen
-
-                      // Lokale Zeit in Sekunden des Tages umrechnen und Restdauer addieren
-                      long end_time_seconds = (now_local.hour * 3600 + now_local.minute * 60 + now_local.second) + total_diff;
-
+                    if (total_diff > 0 && total_diff < 360000) {
+                      
+                      // Lokale Endzeit berechnen (Jetzt Lokal + Differenz)
+                      auto now_local = id(esptime).now();
+                      long local_start_seconds = now_local.hour * 3600 + now_local.minute * 60 + now_local.second;
+                      long local_end_seconds = local_start_seconds + total_diff;
+                      
                       // Tagessprung behandeln (Modulo 24h)
-                      while (end_time_seconds >= 86400) end_time_seconds -= 86400;
+                      int end_h = (local_end_seconds / 3600) % 24;
+                      int end_m = (local_end_seconds % 3600) / 60;
 
-                      int end_h = end_time_seconds / 3600;
-                      int end_m = (end_time_seconds % 3600) / 60;
-
-                      char buf[32];
-                      // Format: "17:30 / 1:45" (Endzeit / Dauer)
-                      snprintf(buf, sizeof(buf), "%d:%02d / %d:%02d", end_h, end_m, rh, rm);
-
+                      char buf[16];
+                      // Format: NUR noch Uhrzeit -> "17:30"
+                      // Wenn es "delayedstart" ist, zeigt es auch die Zeit an, wann es fertig ist
+                      snprintf(buf, sizeof(buf), "%d:%02d", end_h, end_m);
+                      
                       if (status == "delayedstart") return std::string("-> ") + buf;
                       return std::string(buf);
                     } else {
@@ -140,8 +135,10 @@ text_sensor:
                     }
                 }
               }
+              // Fallback, falls Zeit nicht lesbar
               return "Läuft";
             }
+
             return status;
 
   # 2. Sensor für die Endzeit
