@@ -17,7 +17,7 @@ Performance: optimized for ESP32S3 using PSRAM with custom partition handling.
 Hardware: Waveshare 7-inch ESP32-S3 Touchscreen.
 Software:
 Home Assistant (for sensors/entities).
-ESPHome 2024.11.4 (Tested & Verified).
+ESPHome 2025.11.4 (Tested & Verified).
 
 
 🚀 Installation
