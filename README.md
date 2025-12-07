@@ -27,3 +27,5 @@ Update the entity_id references in packages/ui_sensors.yaml to match your Home A
 Compile and upload.
 
 Created with ESPHome & LVGL
+
+<img width="2560" height="1928" alt="image" src="https://github.com/user-attachments/assets/8be34da7-992c-4447-a63e-ef14f955dcc9" />
