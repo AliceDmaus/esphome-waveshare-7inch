@@ -71,9 +71,6 @@ i2c:
 ch422g:
   - id: ch422g_hub
 
-# ==================================================
-# ZEIT & AKTUALISIERUNG (Dieser Teil fehlte!)
-# ==================================================
 time:
   - platform: homeassistant
     id: esptime
@@ -101,9 +98,6 @@ time:
                 snprintf(date_str, sizeof(date_str), "%02d.%02d.%04d", now.day_of_month, now.month, now.year);
                 return date_str;
 
-# ==================================================
-# LOGIK / GLOBALS
-# ==================================================
 
 globals:
   - id: timer_remaining_seconds
@@ -111,7 +105,6 @@ globals:
     restore_value: no
     initial_value: '0'
 
-  # NEU: Merker, ob der Timer läuft
   - id: timer_timer_active
     type: bool
     restore_value: no
@@ -121,19 +114,16 @@ interval:
   - interval: 1s
     then:
       - lambda: |-
-          // Zähl-Logik (bleibt wie vorher besprochen)
           if (id(timer_remaining_seconds) > 0 && id(timer_timer_active)) {
             id(timer_remaining_seconds)--;
           }
       - lvgl.label.update:
           id: timer_timer_label
           text: !lambda |-
-            // 1. PRÜFUNG: Wenn Zeit abgelaufen oder 0, zeige "Inaktiv"
             if (id(timer_remaining_seconds) <= 0) {
               return "Bereit";
             }
 
-            // 2. FORMATIERUNG: Zeit berechnen (Wenn > 0)
             int hours = id(timer_remaining_seconds) / 3600;
             int mins = (id(timer_remaining_seconds) % 3600) / 60;
             int secs = id(timer_remaining_seconds) % 60;

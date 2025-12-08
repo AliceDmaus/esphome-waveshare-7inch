@@ -1,8 +1,6 @@
-# MDI Icon Substitutions ZUERST definieren [6]
 substitutions:
   device_internal_name: waveshare-7inch
   device_friendly_name: Waveshare 7inch
-  # MDI Icons (Benötigt für ui_main.yaml)
   mdi_thermometer: "\U000F050F"
   mdi_sofa: "\U000F04B9"
   mdi_timer: "\U000F051B"
@@ -19,19 +17,15 @@ esphome:
     board_build.flash_mode: dio
     board_upload.maximum_ram_size: 524288
 
-  # START LOGIK
   on_boot:
     priority: 600
     then:
       - delay: 500ms
-      # 1. Alten Chip aktivieren (Löst den Hardware-Konflikt)
       - switch.turn_on: old_backlight_switch
-      # 2. Neues Licht auf 100%
       - light.turn_on:
           id: lcdbacklight
           brightness: 100%
 
-# Globales Hintergrundbild definition [6]
 image:
   - file: "images/background.jpg"
     id: image_background

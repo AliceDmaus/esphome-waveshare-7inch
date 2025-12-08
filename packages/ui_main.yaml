@@ -16,9 +16,6 @@ lvgl:
       bg_opa: TRANSP
 
       widgets:
-        # ==================================================
-        # HEADER: UHRZEIT & DATUM
-        # ==================================================
         - label:
             id: time_label
             text: "12:34"
@@ -37,11 +34,6 @@ lvgl:
             text_font: roboto_64 # [3]
             text_color: 0xDDDDDD
 
-        # ==================================================
-        # REIHE 1 (OBEN)
-        # ==================================================
-
-        # --- BOX LINKS OBEN (Wetter & Außen) ---
         - obj:
             x: 20
             y: 140
@@ -54,7 +46,6 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        # Wetter Icon
         - label:
             id: weather_condition # Aktualisiert durch [5]
             text: "\U000F0590"
@@ -63,7 +54,6 @@ lvgl:
             text_font: icons_70
             text_color: 0x00B4D8
 
-        # Außen Temperatur
         - label:
             id: temp_aussen       # Aktualisiert durch [5]
             text: "--"
@@ -72,7 +62,6 @@ lvgl:
             text_font: roboto_70
             text_color: 0xFFFFFF
 
-        # --- BOX RECHTS OBEN (Wohnzimmer) ---
         - obj:
             x: 410
             y: 140
@@ -85,7 +74,6 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        # Haus Icon (Zur Erkennung)
         - label:
             text: ${mdi_sofa}     # Substitution aus [1]
             x: 430
@@ -93,7 +81,6 @@ lvgl:
             text_font: icons_70
             text_color: 0xFFFFFF
 
-        # Wohnzimmer Temperatur
         - label:
             id: temp_wohnzimmer   # Aktualisiert durch [5]
             text: "--"
@@ -102,14 +89,9 @@ lvgl:
             text_font: roboto_70
             text_color: 0xFFFFFF
 
-        # ==================================================
-        # REIHE 2 (UNTEN)
-        # ==================================================
-
-        # --- BOX LINKS UNTEN (Waschmaschine) ---
         - obj:
             x: 20
-            y: 310                 # Y-Position nach unten verschoben (140+160+10 Abstand)
+            y: 310
             width: 370
             height: 160
             bg_color: 0x000000
@@ -119,7 +101,6 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        # Waschmaschine Icon
         - label:
             text: ${mdi_washing_machine} # [1]
             x: 40
@@ -127,7 +108,6 @@ lvgl:
             text_font: icons_70
             text_color: 0xFFFFFF
 
-        # Waschmaschine Zeit/Status
         - label:
             id: washer_time       # Aktualisiert durch [5] (Annahme basierend auf Kontext)
             text: "Bereit"
@@ -136,7 +116,6 @@ lvgl:
             text_font: roboto_70
             text_color: 0xFFFFFF
 
-        # --- BOX RECHTS UNTEN (Pizza Timer) ---
         - obj:
             x: 410
             y: 310
@@ -149,15 +128,12 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        # Timer Icon (Weiß und neu definiert)
         - label:
             text: ${mdi_timer}     # Benutzt die neue Substitution
             x: 430
             y: 355
             text_font: icons_70
-            text_color: 0xFFFFFF   # <--- Jetzt WEISS statt Orange
-
-        # Timer Zeit
+            text_color: 0xFFFFFF
         - label:
             id: timer_timer_label # Aktualisiert durch base.yaml [2]
             text: "00:00"

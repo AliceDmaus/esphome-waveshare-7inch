@@ -7,7 +7,6 @@ sensor:
     entity_id: sensor.thermometer_aussen_temperature
     on_value:
       - lambda: |-
-          // 1. Farbe berechnen
           lv_color_t color;
           if (x <= 0) {
             color = lv_color_hex(0x80D8FF); // Kalt: Helles Eisblau
@@ -21,12 +20,9 @@ sensor:
             color = lv_color_hex(0xFF0000); // Heiß: Rot
           }
 
-          // 2. Farbe anwenden (FEHLERBEHEBUNG: ->obj entfernt)
-          // Wir übergeben das ID-Objekt direkt an LVGL
           lv_obj_set_style_text_color(id(weather_condition), color, 0);
           lv_obj_set_style_text_color(id(temp_aussen), color, 0);
 
-      # 3. Text aktualisieren
       - lvgl.label.update:
           id: temp_aussen
           text: !lambda |-
@@ -47,7 +43,6 @@ sensor:
             return buf;
 
 text_sensor:
-  # Wetter-Zustand (Bestehend aus [5])
   - platform: homeassistant
     id: weather_state
     entity_id: weather.leipzig_holzhausen
@@ -67,7 +62,6 @@ text_sensor:
             if (state == "clear-night") return "\U000F0594";
             return "\U000F0590";
 
-  # 1. Haupt-Logik: Status + Übersetzung
   - platform: homeassistant
     id: washer_status_sensor
     entity_id: sensor.waschtrockner_betriebszustand
@@ -85,47 +79,35 @@ text_sensor:
             if (status == "pause") return "Pause";
             if (status == "error" || status == "aborting") return "Prüfen!";
 
-            // 2. ENDZEIT BERECHNEN
             if (status == "run" || status == "delayedstart") {
               if (time_str.length() >= 19) {
                 int Y, M, D, h, m, s;
-                // Parse ISO String (UTC)
                 if (sscanf(time_str.c_str(), "%d-%d-%dT%d:%d:%d", &Y, &M, &D, &h, &m, &s) == 6) {
-                    
-                    // --- Tage berechnen (JDN Formel) ---
-                    // Ziel (UTC)
                     int a1 = (14 - M) / 12;
                     int y1 = Y + 4800 - a1;
                     int m1 = M + 12 * a1 - 3;
                     int jdn_target = D + (153 * m1 + 2) / 5 + 365 * y1 + y1 / 4 - y1 / 100 + y1 / 400 - 32045;
                     
-                    // Heute (UTC)
                     auto now_utc = id(esptime).utcnow();
                     int a2 = (14 - now_utc.month) / 12;
                     int y2 = now_utc.year + 4800 - a2;
                     int m2 = now_utc.month + 12 * a2 - 3;
                     int jdn_now = now_utc.day_of_month + (153 * m2 + 2) / 5 + 365 * y2 + y2 / 4 - y2 / 100 + y2 / 400 - 32045;
 
-                    // Differenz in Sekunden
                     long diff_days = jdn_target - jdn_now;
                     long target_sec_day = h * 3600 + m * 60 + s;
                     long now_sec_day = now_utc.hour * 3600 + now_utc.minute * 60 + now_utc.second;
                     long total_diff = (diff_days * 86400) + (target_sec_day - now_sec_day);
 
-                    if (total_diff > 0 && total_diff < 360000) {
-                      
-                      // Lokale Endzeit berechnen (Jetzt Lokal + Differenz)
+                    if (total_diff > 0 && total_diff < 604800) {
                       auto now_local = id(esptime).now();
                       long local_start_seconds = now_local.hour * 3600 + now_local.minute * 60 + now_local.second;
                       long local_end_seconds = local_start_seconds + total_diff;
                       
-                      // Tagessprung behandeln (Modulo 24h)
                       int end_h = (local_end_seconds / 3600) % 24;
                       int end_m = (local_end_seconds % 3600) / 60;
 
                       char buf[16];
-                      // Format: NUR noch Uhrzeit -> "17:30"
-                      // Wenn es "delayedstart" ist, zeigt es auch die Zeit an, wann es fertig ist
                       snprintf(buf, sizeof(buf), "%d:%02d", end_h, end_m);
                       
                       if (status == "delayedstart") return std::string("-> ") + buf;
@@ -133,23 +115,22 @@ text_sensor:
                     } else {
                       return "Gleich...";
                     }
+                } else {
+                  ESP_LOGE("time_parse", "Failed to parse time string: %s", time_str.c_str());
+                  return "Zeitfehler";
                 }
               }
-              // Fallback, falls Zeit nicht lesbar
               return "Läuft";
             }
 
             return status;
 
-  # 2. Sensor für die Endzeit
-  # Wenn sich die Zeit ändert, rufen wir einfach wieder die Logik von oben auf (*update_display)
   - platform: homeassistant
     id: washer_time_sensor
     entity_id: sensor.waschtrockner_programm_endzeit
     internal: true
-    on_value: *update_display # <--- VERWEIS AUF ANKER (Fix für den Fehler)
+    on_value: *update_display
 
-  # NEU: Überwacht den STATUS des Timers (Active/Idle/Paused)
   - platform: homeassistant
     id: timer_timer_state
     entity_id: timer.waveshare_display
@@ -157,19 +138,15 @@ text_sensor:
     on_value:
       - lambda: |-
           std::string status = x;
-          // Wenn Status "active" ist, Schalter auf AN setzen
           if (status == "active") {
              id(timer_timer_active) = true;
           } else {
-             // Bei "idle" oder "paused" Schalter auf AUS
              id(timer_timer_active) = false;
-             // Bei "idle" auch Zeit nullen
              if (status == "idle") {
                id(timer_remaining_seconds) = 0;
              }
           }
 
-  # OPTIMIERT: Überwacht die RESTZEIT (synchronisiert die Sekunden)
   - platform: homeassistant
     id: timer_timer_remaining
     entity_id: timer.waveshare_display
@@ -177,13 +154,15 @@ text_sensor:
     internal: true
     on_value:
       - lambda: |-
-          // Parsing der Zeit von HA (z.B. "0:15:00")
           std::string time_str = x;
           if (time_str.empty() || time_str == "None" || time_str == "unavailable") return;
 
           int hours = 0, mins = 0, secs = 0;
           if (sscanf(time_str.c_str(), "%d:%d:%d", &hours, &mins, &secs) == 3) {
             id(timer_remaining_seconds) = hours * 3600 + mins * 60 + secs;
+          }
+          else if (sscanf(time_str.c_str(), "%d:%d", &hours, &mins) == 2) {
+            id(timer_remaining_seconds) = hours * 3600 + mins * 60;
           }
           else if (sscanf(time_str.c_str(), "%d:%d", &mins, &secs) == 2) {
             id(timer_remaining_seconds) = mins * 60 + secs;
