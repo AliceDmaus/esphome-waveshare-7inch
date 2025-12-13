@@ -5,6 +5,7 @@ substitutions:
   mdi_sofa: "\U000F04B9"
   mdi_timer: "\U000F051B"
   mdi_washing_machine: "\U000F072A"
+  mdi_flash: "\U000F0241"
   backlight_pin: GPIO16
 
 esphome:
@@ -25,6 +26,28 @@ esphome:
       - light.turn_on:
           id: lcdbacklight
           brightness: 100%
+      - delay: 1000ms
+      - lambda: |-
+          // Initialisiere die Anzeige-Elemente basierend auf dem Timer-Status
+          if (id(timer_timer_active) && id(timer_remaining_seconds) > 0) {
+            // Timer läuft: Timer-Elemente anzeigen, alternative Elemente ausblenden
+            lv_obj_add_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
+          } else {
+            // Timer läuft nicht: Alternative Elemente anzeigen, Timer-Elemente ausblenden
+            lv_obj_add_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
+          }
+      - lvgl.label.update:
+          id: alt_clock_label
+          text: "0 W"
+      - lvgl.label.update:
+          id: alt_clock_icon
+          text: ${mdi_flash}
 
 image:
   - file: "images/background.jpg"

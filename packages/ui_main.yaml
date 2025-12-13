@@ -52,7 +52,7 @@ lvgl:
             x: 40
             y: 188
             text_font: icons_70
-            text_color: 0x00B4D8
+            text_color: 0xFFFFFF
 
         - label:
             id: temp_aussen       # Aktualisiert durch [5]
@@ -129,6 +129,7 @@ lvgl:
             border_opa: 100%
 
         - label:
+            id: timer_icon
             text: ${mdi_timer}     # Benutzt die neue Substitution
             x: 430
             y: 355
@@ -137,6 +138,22 @@ lvgl:
         - label:
             id: timer_timer_label # Aktualisiert durch base.yaml [2]
             text: "00:00"
+            x: 520
+            y: 355
+            text_font: roboto_70
+            text_color: 0xFFFFFF
+            
+        # Alternative Anzeige, wenn Timer nicht läuft
+        - label:
+            id: alt_clock_icon
+            text: ${mdi_flash}     # Flash-Icon für Stromverbrauch
+            x: 430
+            y: 355
+            text_font: icons_70
+            text_color: 0xFFFFFF
+        - label:
+            id: alt_clock_label
+            text: "0 W"
             x: 520
             y: 355
             text_font: roboto_70

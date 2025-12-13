@@ -1,33 +1,28 @@
 # Home Assistant Sensoren
 
 sensor:
-  # Außentemperatur mit Farbwechsel
+  # Außentemperatur ohne Farbwechsel
   - platform: homeassistant
     id: temp_aussen_sensor
     entity_id: sensor.thermometer_aussen_temperature
     on_value:
-      - lambda: |-
-          lv_color_t color;
-          if (x <= 0) {
-            color = lv_color_hex(0x80D8FF); // Kalt: Helles Eisblau
-          } else if (x <= 10) {
-            color = lv_color_hex(0x00B4D8); // Kühl: Hellblau
-          } else if (x <= 20) {
-            color = lv_color_hex(0xFFFFFF); // Mild: Weiß
-          } else if (x <= 28) {
-            color = lv_color_hex(0xFFA500); // Warm: Orange
-          } else {
-            color = lv_color_hex(0xFF0000); // Heiß: Rot
-          }
-
-          lv_obj_set_style_text_color(id(weather_condition), color, 0);
-          lv_obj_set_style_text_color(id(temp_aussen), color, 0);
-
       - lvgl.label.update:
           id: temp_aussen
           text: !lambda |-
             static char buf[10];
             snprintf(buf, sizeof(buf), "%.1f°C", x);
+            return buf;
+
+  # Stromverbrauchssensor für alternative Anzeige
+  - platform: homeassistant
+    id: power_consumption_sensor
+    entity_id: sensor.tibber_watt_korrigiert
+    on_value:
+      - lvgl.label.update:
+          id: alt_clock_label
+          text: !lambda |-
+            static char buf[10];
+            snprintf(buf, sizeof(buf), "%.0f W", x);
             return buf;
 
   # Wohnzimmer-Temperatur
@@ -146,6 +141,22 @@ text_sensor:
                id(timer_remaining_seconds) = 0;
              }
           }
+      # Umschaltung der Anzeige-Elemente bei Timer-Statusänderung
+      - lambda: |-
+          // Timer-Elemente ein/ausblenden basierend auf Timer-Status
+          if (id(timer_timer_active)) {
+            // Timer läuft: Timer-Elemente anzeigen, alternative Elemente ausblenden
+            lv_obj_add_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
+          } else {
+            // Timer läuft nicht: Alternative Elemente anzeigen, Timer-Elemente ausblenden
+            lv_obj_add_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
+          }
 
   - platform: homeassistant
     id: timer_timer_remaining
@@ -166,4 +177,13 @@ text_sensor:
           }
           else if (sscanf(time_str.c_str(), "%d:%d", &mins, &secs) == 2) {
             id(timer_remaining_seconds) = mins * 60 + secs;
+          }
+      # Umschaltung der Anzeige-Elemente bei Timer-Start
+      - lambda: |-
+          // Wenn Timer aktiv ist und verbleibende Zeit > 0, Timer-Elemente anzeigen
+          if (id(timer_timer_active) && id(timer_remaining_seconds) > 0) {
+            lv_obj_add_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
           }
