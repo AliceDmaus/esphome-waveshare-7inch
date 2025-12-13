@@ -53,6 +53,55 @@ image:
   - file: "images/background.jpg"
     id: image_background
     type: RGB565
+  # Wetter Icons
+  - file: "weathericons/0-default.png"
+    id: weather_default
+    type: RGB565
+  - file: "weathericons/1-clear-night.png"
+    id: weather_clear_night
+    type: RGB565
+  - file: "weathericons/2-cloudy.png"
+    id: weather_cloudy
+    type: RGB565
+  - file: "weathericons/3-fog.png"
+    id: weather_fog
+    type: RGB565
+  - file: "weathericons/4-hail.png"
+    id: weather_hail
+    type: RGB565
+  - file: "weathericons/5-lightning.png"
+    id: weather_lightning
+    type: RGB565
+  - file: "weathericons/6-lightning-rainy.png"
+    id: weather_lightning_rainy
+    type: RGB565
+  - file: "weathericons/7-partlycloudy.png"
+    id: weather_partlycloudy
+    type: RGB565
+  - file: "weathericons/8-pouring.png"
+    id: weather_pouring
+    type: RGB565
+  - file: "weathericons/9-rainy.png"
+    id: weather_rainy
+    type: RGB565
+  - file: "weathericons/10-snowy.png"
+    id: weather_snowy
+    type: RGB565
+  - file: "weathericons/11-snowy-rainy.png"
+    id: weather_snowy_rainy
+    type: RGB565
+  - file: "weathericons/12-sunny.png"
+    id: weather_sunny
+    type: RGB565
+  - file: "weathericons/13-windy.png"
+    id: weather_windy
+    type: RGB565
+  - file: "weathericons/14-windy-variant.png"
+    id: weather_windy_variant
+    type: RGB565
+  - file: "weathericons/15-exceptional.png"
+    id: weather_exceptional
+    type: RGB565
 
 # Packages
 packages:

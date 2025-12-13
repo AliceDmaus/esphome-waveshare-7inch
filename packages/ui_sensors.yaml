@@ -42,20 +42,23 @@ text_sensor:
     id: weather_state
     entity_id: weather.leipzig_holzhausen
     on_value:
-      - lvgl.label.update:
-          id: weather_condition
-          text: !lambda |-
-            std::string state = x;
-            if (state == "sunny") return "\U000F0599";
-            if (state == "cloudy") return "\U000F0590";
-            if (state == "partlycloudy") return "\U000F0595";
-            if (state == "rainy") return "\U000F0597";
-            if (state == "pouring") return "\U000F0596";
-            if (state == "snowy") return "\U000F0598";
-            if (state == "snowy-rainy") return "\U000F067F";
-            if (state == "fog") return "\U000F0591";
-            if (state == "clear-night") return "\U000F0594";
-            return "\U000F0590";
+      - lambda: |-
+          std::string state = x;
+          if (state == "sunny") lv_img_set_src(id(weather_condition), id(weather_sunny));
+          else if (state == "cloudy") lv_img_set_src(id(weather_condition), id(weather_cloudy));
+          else if (state == "partlycloudy") lv_img_set_src(id(weather_condition), id(weather_partlycloudy));
+          else if (state == "rainy") lv_img_set_src(id(weather_condition), id(weather_rainy));
+          else if (state == "pouring") lv_img_set_src(id(weather_condition), id(weather_pouring));
+          else if (state == "snowy") lv_img_set_src(id(weather_condition), id(weather_snowy));
+          else if (state == "snowy-rainy") lv_img_set_src(id(weather_condition), id(weather_snowy_rainy));
+          else if (state == "fog") lv_img_set_src(id(weather_condition), id(weather_fog));
+          else if (state == "clear-night") lv_img_set_src(id(weather_condition), id(weather_clear_night));
+          else if (state == "hail") lv_img_set_src(id(weather_condition), id(weather_hail));
+          else if (state == "lightning") lv_img_set_src(id(weather_condition), id(weather_lightning));
+          else if (state == "lightning-rainy") lv_img_set_src(id(weather_condition), id(weather_lightning_rainy));
+          else if (state == "windy") lv_img_set_src(id(weather_condition), id(weather_windy));
+          else if (state == "windy-variant") lv_img_set_src(id(weather_condition), id(weather_windy_variant));
+          else lv_img_set_src(id(weather_condition), id(weather_default));
 
   - platform: homeassistant
     id: washer_status_sensor

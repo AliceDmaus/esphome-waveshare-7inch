@@ -46,18 +46,16 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        - label:
+        - image:
             id: weather_condition # Aktualisiert durch [5]
-            text: "\U000F0590"
-            x: 40
-            y: 188
-            text_font: icons_70
-            text_color: 0xFFFFFF
+            src: weather_default
+            x: 30
+            y: 175
 
         - label:
             id: temp_aussen       # Aktualisiert durch [5]
             text: "--"
-            x: 130
+            x: 160
             y: 188
             text_font: roboto_70
             text_color: 0xFFFFFF
