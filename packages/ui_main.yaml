@@ -49,8 +49,8 @@ lvgl:
         - image:
             id: weather_condition # Aktualisiert durch [5]
             src: weather_default
-            x: 30
-            y: 175
+            x: 22
+            y: 155
 
         - label:
             id: temp_aussen       # Aktualisiert durch [5]
