@@ -50,13 +50,13 @@ lvgl:
             id: weather_condition # Aktualisiert durch [5]
             src: weather_default
             x: 22
-            y: 155
+            y: 172
 
         - label:
             id: temp_aussen       # Aktualisiert durch [5]
             text: "--"
-            x: 160
-            y: 188
+            x: 130
+            y: 183
             text_font: roboto_70
             text_color: 0xFFFFFF
 
@@ -72,18 +72,16 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        - label:
-            text: ${mdi_sofa}     # Substitution aus [1]
-            x: 430
-            y: 188
-            text_font: icons_70
-            text_color: 0xFFFFFF
+        - image:
+            src: icon_living_room
+            x: 412
+            y: 172
 
         - label:
             id: temp_wohnzimmer   # Aktualisiert durch [5]
             text: "--"
             x: 520
-            y: 188
+            y: 183
             text_font: roboto_70
             text_color: 0xFFFFFF
 
@@ -99,18 +97,16 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        - label:
-            text: ${mdi_washing_machine} # [1]
-            x: 40
-            y: 355
-            text_font: icons_70
-            text_color: 0xFFFFFF
+        - image:
+            src: icon_washing_machine
+            x: 22
+            y: 342
 
         - label:
             id: washer_time       # Aktualisiert durch [5] (Annahme basierend auf Kontext)
             text: "Bereit"
-            x: 120
-            y: 355
+            x: 130
+            y: 350
             text_font: roboto_70
             text_color: 0xFFFFFF
 
@@ -126,33 +122,29 @@ lvgl:
             border_color: 0x444444
             border_opa: 100%
 
-        - label:
+        - image:
             id: timer_icon
-            text: ${mdi_timer}     # Benutzt die neue Substitution
-            x: 430
-            y: 355
-            text_font: icons_70
-            text_color: 0xFFFFFF
+            src: icon_timer
+            x: 412
+            y: 342
         - label:
             id: timer_timer_label # Aktualisiert durch base.yaml [2]
             text: "00:00"
             x: 520
-            y: 355
+            y: 350
             text_font: roboto_70
             text_color: 0xFFFFFF
             
         # Alternative Anzeige, wenn Timer nicht läuft
-        - label:
+        - image:
             id: alt_clock_icon
-            text: ${mdi_flash}     # Flash-Icon für Stromverbrauch
-            x: 430
-            y: 355
-            text_font: icons_70
-            text_color: 0xFFFFFF
+            src: icon_electric_meter
+            x: 412
+            y: 342
         - label:
             id: alt_clock_label
             text: "0 W"
             x: 520
-            y: 355
+            y: 350
             text_font: roboto_70
             text_color: 0xFFFFFF

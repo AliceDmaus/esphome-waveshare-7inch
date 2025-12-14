@@ -45,9 +45,9 @@ esphome:
       - lvgl.label.update:
           id: alt_clock_label
           text: "0 W"
-      - lvgl.label.update:
+      - lvgl.image.update:
           id: alt_clock_icon
-          text: ${mdi_flash}
+          src: icon_electric_meter
 
 image:
   - file: "images/background.jpg"
@@ -57,51 +57,84 @@ image:
   - file: "weathericons/0-default.png"
     id: weather_default
     type: RGB565
+    resize: 96x96
   - file: "weathericons/1-clear-night.png"
     id: weather_clear_night
     type: RGB565
+    resize: 96x96
   - file: "weathericons/2-cloudy.png"
     id: weather_cloudy
     type: RGB565
+    resize: 96x96
   - file: "weathericons/3-fog.png"
     id: weather_fog
     type: RGB565
+    resize: 96x96
   - file: "weathericons/4-hail.png"
     id: weather_hail
     type: RGB565
+    resize: 96x96
   - file: "weathericons/5-lightning.png"
     id: weather_lightning
     type: RGB565
+    resize: 96x96
   - file: "weathericons/6-lightning-rainy.png"
     id: weather_lightning_rainy
     type: RGB565
+    resize: 96x96
   - file: "weathericons/7-partlycloudy.png"
     id: weather_partlycloudy
     type: RGB565
+    resize: 96x96
   - file: "weathericons/8-pouring.png"
     id: weather_pouring
     type: RGB565
+    resize: 96x96
   - file: "weathericons/9-rainy.png"
     id: weather_rainy
     type: RGB565
+    resize: 96x96
   - file: "weathericons/10-snowy.png"
     id: weather_snowy
     type: RGB565
+    resize: 96x96
   - file: "weathericons/11-snowy-rainy.png"
     id: weather_snowy_rainy
     type: RGB565
+    resize: 96x96
   - file: "weathericons/12-sunny.png"
     id: weather_sunny
     type: RGB565
+    resize: 96x96
   - file: "weathericons/13-windy.png"
     id: weather_windy
     type: RGB565
+    resize: 96x96
   - file: "weathericons/14-windy-variant.png"
     id: weather_windy_variant
     type: RGB565
+    resize: 96x96
   - file: "weathericons/15-exceptional.png"
     id: weather_exceptional
     type: RGB565
+    resize: 96x96
+  # Custom Icons
+  - file: "weathericons/electric-meter.png"
+    id: icon_electric_meter
+    type: RGB565
+    resize: 96x96
+  - file: "weathericons/living-room.png"
+    id: icon_living_room
+    type: RGB565
+    resize: 96x96
+  - file: "weathericons/washing-machine.png"
+    id: icon_washing_machine
+    type: RGB565
+    resize: 96x96
+  - file: "weathericons/timer.png"
+    id: icon_timer
+    type: RGB565
+    resize: 96x96
 
 # Packages
 packages:
