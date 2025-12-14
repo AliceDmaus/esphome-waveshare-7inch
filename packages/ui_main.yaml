@@ -56,7 +56,7 @@ lvgl:
             id: temp_aussen       # Aktualisiert durch [5]
             text: "--"
             x: 130
-            y: 183
+            y: 180
             text_font: roboto_70
             text_color: 0xFFFFFF
 
@@ -81,7 +81,7 @@ lvgl:
             id: temp_wohnzimmer   # Aktualisiert durch [5]
             text: "--"
             x: 520
-            y: 183
+            y: 180
             text_font: roboto_70
             text_color: 0xFFFFFF
 
