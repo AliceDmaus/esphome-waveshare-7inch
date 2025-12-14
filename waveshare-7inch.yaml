@@ -1,11 +1,6 @@
 substitutions:
   device_internal_name: waveshare-7inch
   device_friendly_name: Waveshare 7inch
-  mdi_thermometer: "\U000F050F"
-  mdi_sofa: "\U000F04B9"
-  mdi_timer: "\U000F051B"
-  mdi_washing_machine: "\U000F072A"
-  mdi_flash: "\U000F0241"
   backlight_pin: GPIO16
 
 esphome:
@@ -119,19 +114,19 @@ image:
     type: RGB565
     resize: 96x96
   # Custom Icons
-  - file: "weathericons/electric-meter.png"
+  - file: "customicons/electric-meter.png"
     id: icon_electric_meter
     type: RGB565
     resize: 96x96
-  - file: "weathericons/living-room.png"
+  - file: "customicons/living-room.png"
     id: icon_living_room
     type: RGB565
     resize: 96x96
-  - file: "weathericons/washing-machine.png"
+  - file: "customicons/washing-machine.png"
     id: icon_washing_machine
     type: RGB565
     resize: 96x96
-  - file: "weathericons/timer.png"
+  - file: "customicons/timer.png"
     id: icon_timer
     type: RGB565
     resize: 96x96

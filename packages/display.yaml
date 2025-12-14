@@ -11,11 +11,6 @@ font:
     id: roboto_clock_huge
     size: 120
     glyphs: ":0123456789"
-  - file: "fonts/materialdesignicons-webfont.ttf"
-    id: icons_70
-    size: 70
-    bpp: 4
-    glyphs: ["\U000F050F", "\U000F02DC", "\U000F0AAC", "\U000F072A", "\U000F0409", "\U000F0599", "\U000F0590", "\U000F0595", "\U000F0597", "\U000F0596", "\U000F0598", "\U000F067F", "\U000F0591", "\U000F0594", "\U000F059D", "\U000F0593", "\U000F051B", "\U000F04B9", "\U000F0241"]
 
 output:
   - platform: ledc
