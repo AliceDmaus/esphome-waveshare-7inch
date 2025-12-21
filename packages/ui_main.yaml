@@ -3,9 +3,11 @@ lvgl:
   color_depth: 16
   bg_color: 0x000000
   disp_bg_image: image_background # [1]
+  # DISABLED: update_when_display_idle doesn't work with mipi_rgb displays (causes black screen)
+  # update_when_display_idle: true  # New in 2025.12.0 - syncs LVGL updates with display refresh
 
   displays:
-    - my_display
+    - waveshare_display
 
   touchscreens:
     - my_touchscreen
@@ -14,6 +16,10 @@ lvgl:
     - id: main_page
       scrollable: false
       bg_opa: TRANSP
+      # New 2025.12.0 scroll properties
+      scroll_snap_x: CENTER
+      scroll_snap_y: CENTER
+      scrollbar_mode: AUTO
 
       widgets:
         - label:

@@ -2,15 +2,15 @@ substitutions:
   device_internal_name: waveshare-7inch
   device_friendly_name: Waveshare 7inch
   backlight_pin: GPIO16
+  # New conditional options for 2025.12.0
+  enable_debug: "false"  # Set to "true" to enable debug logging
+  enable_antiburn: "true"  # Set to "false" to disable antiburn feature
 
 esphome:
-  name: ${device_internal_name}
-  friendly_name: ${device_friendly_name}
+  name: main-display
+  friendly_name: Main-Display
 
   platformio_options:
-    build_flags: "-DBOARD_HAS_PSRAM"
-    board_build.arduino.memory_type: qio_opi
-    board_build.flash_mode: dio
     board_upload.maximum_ram_size: 524288
 
   on_boot:
@@ -131,9 +131,11 @@ image:
     type: RGB565
     resize: 96x96
 
-# Packages
+# Packages - Enhanced with conditional inclusion (2025.12.0 feature)
 packages:
   base: !include packages/base.yaml
   display: !include packages/display.yaml
   ui_main: !include packages/ui_main.yaml
   ui_sensors: !include packages/ui_sensors.yaml
+  # Example of conditional package inclusion (new in 2025.12.0)
+  # debug_package: ${enable_debug == "true" ? !include packages/debug.yaml : {}}

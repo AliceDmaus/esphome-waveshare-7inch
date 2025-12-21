@@ -1,25 +1,12 @@
 # Hardware, Netzwerk & Logik
 esp32:
-  board: esp32-s3-devkitc-1
   variant: esp32s3
-  flash_size: 8MB
+  flash_size: 16MB
   cpu_frequency: 240MHz
   framework:
     type: esp-idf
-    version: recommended
-    sdkconfig_options:
-      CONFIG_COMPILER_OPTIMIZATION_PERF: y
-      CONFIG_ESP32S3_DATA_CACHE_64KB: "y"
-      CONFIG_ESP32S3_DATA_CACHE_LINE_64B: y
-      CONFIG_ESPTOOLPY_FLASHSIZE_8MB: "y"
-      CONFIG_ESPTOOLPY_FLASHMODE_QIO: y
-      CONFIG_ESPTOOLPY_FLASHFREQ_80M: y
-      CONFIG_SPIRAM_MODE_OCT: y
-      CONFIG_SPIRAM_SPEED_80M: y
-      CONFIG_SPIRAM_FETCH_INSTRUCTIONS: y
-      CONFIG_SPIRAM_RODATA: y
 
-# PSRAM Stabil auf 80MHz
+# PSRAM Stabil auf 80MHz - optimized with 2025.12.0 improvements
 psram:
   mode: octal
   speed: 80MHz
