@@ -15,12 +15,12 @@ Optional Debug/Antiburn packages: toggle via the enable_debug / enable_antiburn 
 Hardware: Waveshare 7-inch ESP32-S3 Touchscreen.
 Software:
 Home Assistant (for sensors/entities).
-ESPHome 2025.11.4 (Tested & Verified).
+ESPHome 2026.7.2 (Tested & Verified).
 
 
 🚀 Installation
 Copy the images/ and fonts/ folders to your ESPHome configuration directory.
-Adjust secrets.yaml with your WiFi and API credentials.
+Copy secrets-example.yml to secrets.yaml and fill in your WiFi and API credentials.
 Update the entity_id references in packages/ui_sensors.yaml to match your Home Assistant entities.
 Compile and upload.
 
