@@ -28,7 +28,7 @@ sensor:
   # Wohnzimmer-Temperatur
   - platform: homeassistant
     id: temp_wohnzimmer_sensor
-    entity_id: sensor.thermometer_wohnzimmer_temperature
+    entity_id: sensor.thermometer_wohnzimmer_temperatur
     on_value:
       - lvgl.label.update:
           id: temp_wohnzimmer
@@ -58,6 +58,7 @@ text_sensor:
           else if (state == "lightning-rainy") lv_img_set_src(id(weather_condition), id(weather_lightning_rainy));
           else if (state == "windy") lv_img_set_src(id(weather_condition), id(weather_windy));
           else if (state == "windy-variant") lv_img_set_src(id(weather_condition), id(weather_windy_variant));
+          else if (state == "exceptional") lv_img_set_src(id(weather_condition), id(weather_exceptional));
           else lv_img_set_src(id(weather_condition), id(weather_default));
 
   - platform: homeassistant
@@ -144,22 +145,7 @@ text_sensor:
                id(timer_remaining_seconds) = 0;
              }
           }
-      # Umschaltung der Anzeige-Elemente bei Timer-Statusänderung
-      - lambda: |-
-          // Timer-Elemente ein/ausblenden basierend auf Timer-Status
-          if (id(timer_timer_active)) {
-            // Timer läuft: Timer-Elemente anzeigen, alternative Elemente ausblenden
-            lv_obj_add_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
-          } else {
-            // Timer läuft nicht: Alternative Elemente anzeigen, Timer-Elemente ausblenden
-            lv_obj_add_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
-          }
+      - script.execute: update_timer_visibility
 
   - platform: homeassistant
     id: timer_timer_remaining
@@ -178,15 +164,4 @@ text_sensor:
           else if (sscanf(time_str.c_str(), "%d:%d", &hours, &mins) == 2) {
             id(timer_remaining_seconds) = hours * 3600 + mins * 60;
           }
-          else if (sscanf(time_str.c_str(), "%d:%d", &mins, &secs) == 2) {
-            id(timer_remaining_seconds) = mins * 60 + secs;
-          }
-      # Umschaltung der Anzeige-Elemente bei Timer-Start
-      - lambda: |-
-          // Wenn Timer aktiv ist und verbleibende Zeit > 0, Timer-Elemente anzeigen
-          if (id(timer_timer_active) && id(timer_remaining_seconds) > 0) {
-            lv_obj_add_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
-          }
+      - script.execute: update_timer_visibility

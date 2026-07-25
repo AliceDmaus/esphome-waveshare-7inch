@@ -89,6 +89,22 @@ globals:
     restore_value: no
     initial_value: 'false'
 
+script:
+  - id: update_timer_visibility
+    then:
+      - lambda: |-
+          if (id(timer_timer_active)) {
+            lv_obj_add_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
+          } else {
+            lv_obj_add_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_add_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
+            lv_obj_clear_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
+          }
+
 interval:
   - interval: 1s
     then:
@@ -96,24 +112,28 @@ interval:
           if (id(timer_remaining_seconds) > 0 && id(timer_timer_active)) {
             id(timer_remaining_seconds)--;
           }
-      - lvgl.label.update:
-          id: timer_timer_label
-          text: !lambda |-
-            if (id(timer_remaining_seconds) <= 0) {
-              return "Bereit";
-            }
+      - if:
+          condition:
+            lambda: 'return id(timer_timer_active);'
+          then:
+            - lvgl.label.update:
+                id: timer_timer_label
+                text: !lambda |-
+                  if (id(timer_remaining_seconds) <= 0) {
+                    return "Bereit";
+                  }
 
-            int hours = id(timer_remaining_seconds) / 3600;
-            int mins = (id(timer_remaining_seconds) % 3600) / 60;
-            int secs = id(timer_remaining_seconds) % 60;
+                  int hours = id(timer_remaining_seconds) / 3600;
+                  int mins = (id(timer_remaining_seconds) % 3600) / 60;
+                  int secs = id(timer_remaining_seconds) % 60;
 
-            static char buf[10];
-            if (hours > 0) {
-              snprintf(buf, sizeof(buf), "%d:%02d:%02d", hours, mins, secs);
-            } else {
-              snprintf(buf, sizeof(buf), "%02d:%02d", mins, secs);
-            }
-            return buf;
+                  static char buf[10];
+                  if (hours > 0) {
+                    snprintf(buf, sizeof(buf), "%d:%02d:%02d", hours, mins, secs);
+                  } else {
+                    snprintf(buf, sizeof(buf), "%02d:%02d", mins, secs);
+                  }
+                  return buf;
 button:
   - platform: restart
     name: "Display Neustart"

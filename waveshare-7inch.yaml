@@ -2,9 +2,11 @@ substitutions:
   device_internal_name: waveshare-7inch
   device_friendly_name: Waveshare 7inch
   backlight_pin: GPIO16
-  # New conditional options for 2025.12.0
+  # Conditionally included packages, see https://esphome.io/components/packages/
   enable_debug: "false"  # Set to "true" to enable debug logging
   enable_antiburn: "true"  # Set to "false" to disable antiburn feature
+  debug_package: !include packages/debug.yaml
+  antiburn_package: !include packages/antiburn.yaml
 
 esphome:
   name: main-display
@@ -17,125 +19,145 @@ esphome:
     priority: 600
     then:
       - delay: 500ms
+      - script.execute: update_timer_visibility
       - switch.turn_on: old_backlight_switch
       - light.turn_on:
           id: lcdbacklight
           brightness: 100%
-      - delay: 1000ms
-      - lambda: |-
-          // Initialisiere die Anzeige-Elemente basierend auf dem Timer-Status
-          if (id(timer_timer_active) && id(timer_remaining_seconds) > 0) {
-            // Timer läuft: Timer-Elemente anzeigen, alternative Elemente ausblenden
-            lv_obj_add_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
-          } else {
-            // Timer läuft nicht: Alternative Elemente anzeigen, Timer-Elemente ausblenden
-            lv_obj_add_flag(id(timer_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_add_flag(id(timer_timer_label), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(alt_clock_icon), LV_OBJ_FLAG_HIDDEN);
-            lv_obj_clear_flag(id(alt_clock_label), LV_OBJ_FLAG_HIDDEN);
-          }
-      - lvgl.label.update:
-          id: alt_clock_label
-          text: "0 W"
-      - lvgl.image.update:
-          id: alt_clock_icon
-          src: icon_electric_meter
 
 image:
-  - file: "images/background.jpg"
+  - platform: file
+    file: images/background.jpg
     id: image_background
     type: RGB565
-  # Wetter Icons
-  - file: "weathericons/0-default.png"
+  - platform: file
+    file: weathericons/0-default.png
     id: weather_default
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/1-clear-night.png"
+  - platform: file
+    file: weathericons/1-clear-night.png
     id: weather_clear_night
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/2-cloudy.png"
+  - platform: file
+    file: weathericons/2-cloudy.png
     id: weather_cloudy
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/3-fog.png"
+  - platform: file
+    file: weathericons/3-fog.png
     id: weather_fog
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/4-hail.png"
+  - platform: file
+    file: weathericons/4-hail.png
     id: weather_hail
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/5-lightning.png"
+  - platform: file
+    file: weathericons/5-lightning.png
     id: weather_lightning
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/6-lightning-rainy.png"
+  - platform: file
+    file: weathericons/6-lightning-rainy.png
     id: weather_lightning_rainy
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/7-partlycloudy.png"
+  - platform: file
+    file: weathericons/7-partlycloudy.png
     id: weather_partlycloudy
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/8-pouring.png"
+  - platform: file
+    file: weathericons/8-pouring.png
     id: weather_pouring
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/9-rainy.png"
+  - platform: file
+    file: weathericons/9-rainy.png
     id: weather_rainy
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/10-snowy.png"
+  - platform: file
+    file: weathericons/10-snowy.png
     id: weather_snowy
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/11-snowy-rainy.png"
+  - platform: file
+    file: weathericons/11-snowy-rainy.png
     id: weather_snowy_rainy
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/12-sunny.png"
+  - platform: file
+    file: weathericons/12-sunny.png
     id: weather_sunny
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/13-windy.png"
+  - platform: file
+    file: weathericons/13-windy.png
     id: weather_windy
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/14-windy-variant.png"
+  - platform: file
+    file: weathericons/14-windy-variant.png
     id: weather_windy_variant
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "weathericons/15-exceptional.png"
+  - platform: file
+    file: weathericons/15-exceptional.png
     id: weather_exceptional
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  # Custom Icons
-  - file: "customicons/electric-meter.png"
+  - platform: file
+    file: customicons/electric-meter.png
     id: icon_electric_meter
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "customicons/living-room.png"
+  - platform: file
+    file: customicons/living-room.png
     id: icon_living_room
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "customicons/washing-machine.png"
+  - platform: file
+    file: customicons/washing-machine.png
     id: icon_washing_machine
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
-  - file: "customicons/timer.png"
+  - platform: file
+    file: customicons/timer.png
     id: icon_timer
-    type: RGB565
+    type: RGB
+    transparency: alpha_channel
     resize: 96x96
 
-# Packages - Enhanced with conditional inclusion (2025.12.0 feature)
+
+# Packages
 packages:
   base: !include packages/base.yaml
   display: !include packages/display.yaml
   ui_main: !include packages/ui_main.yaml
   ui_sensors: !include packages/ui_sensors.yaml
-  # Example of conditional package inclusion (new in 2025.12.0)
-  # debug_package: ${enable_debug == "true" ? !include packages/debug.yaml : {}}
+  # Conditionally merged in based on the enable_* substitutions above
+  debug: ${ debug_package if enable_debug == "true" else {} }
+  antiburn: ${ antiburn_package if enable_antiburn == "true" else {} }

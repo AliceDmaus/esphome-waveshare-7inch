@@ -7,10 +7,8 @@ Weather: Real-time weather conditions with dynamic MDI icons and outdoor tempera
 Climate: Indoor temperature monitoring (with sofa icon).
 Smart Appliance: Advanced washing machine monitor that translates states (e.g., run -> 15:30) and calculating finishing times from ISO timestamps.
 Visual Timer: Fluid countdown animation (e.g., Pizza Timer) synchronized with Home Assistant helpers.
-Dynamic Visuals:
-Element colors change based on values (e.g., temperature thresholds).
-Support for Day/Night background image switching.
 Performance: optimized for ESP32S3 using PSRAM with custom partition handling.
+Optional Debug/Antiburn packages: toggle via the enable_debug / enable_antiburn substitutions in waveshare-7inch.yaml.
 
 
 🛠️ Requirements

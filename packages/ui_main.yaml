@@ -2,7 +2,8 @@ lvgl:
   log_level: INFO
   color_depth: 16
   bg_color: 0x000000
-  disp_bg_image: image_background # [1]
+  bottom_layer:
+    bg_image_src: image_background # [1] Updated from deprecated disp_bg_image (2026.5)
   # DISABLED: update_when_display_idle doesn't work with mipi_rgb displays (causes black screen)
   # update_when_display_idle: true  # New in 2025.12.0 - syncs LVGL updates with display refresh
 
@@ -16,10 +17,6 @@ lvgl:
     - id: main_page
       scrollable: false
       bg_opa: TRANSP
-      # New 2025.12.0 scroll properties
-      scroll_snap_x: CENTER
-      scroll_snap_y: CENTER
-      scrollbar_mode: AUTO
 
       widgets:
         - label:
@@ -134,7 +131,7 @@ lvgl:
             x: 412
             y: 342
         - label:
-            id: timer_timer_label # Aktualisiert durch base.yaml [2]
+            id: timer_timer_label
             text: "00:00"
             x: 520
             y: 350

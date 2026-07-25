@@ -6,7 +6,7 @@ font:
   - file: "gfonts://Roboto"
     id: roboto_70
     size: 70
-    glyphsets: [GF_Latin_Core]
+    glyphs: "0123456789 .:°-!>BCFGLPWZacefghilnrstuäü"
   - file: "gfonts://Roboto"
     id: roboto_clock_huge
     size: 120
@@ -14,7 +14,7 @@ font:
 
 output:
   - platform: ledc
-    pin: GPIO16
+    pin: ${backlight_pin}
     id: backlight_pwm
     min_power: 0.07
     zero_means_zero: true
@@ -41,18 +41,6 @@ switch:
         output: true
       inverted: false
     restore_mode: ALWAYS_ON
-
-  - platform: template
-    name: Antiburn
-    id: switch_antiburn
-    icon: mdi:television-shimmer
-    optimistic: true
-    entity_category: "config"
-    turn_on_action:
-      - if: {condition: lvgl.is_paused, then: [lvgl.resume, lvgl.widget.redraw]}
-      - lvgl.pause: {show_snow: true}
-    turn_off_action:
-      - if: {condition: lvgl.is_paused, then: [lvgl.resume, lvgl.widget.redraw]}
 
 touchscreen:
   platform: gt911
