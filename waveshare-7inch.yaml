@@ -8,6 +8,11 @@ substitutions:
   debug_package: !include packages/debug.yaml
   antiburn_package: !include packages/antiburn.yaml
 
+external_components:
+  - source: components
+
+aligned_progmem:
+
 esphome:
   name: main-display
   friendly_name: Main-Display
