@@ -79,44 +79,26 @@ text_sensor:
             if (status == "error" || status == "aborting") return "Prüfen!";
 
             if (status == "run" || status == "delayedstart") {
-              if (time_str.length() >= 19) {
-                int Y, M, D, h, m, s;
-                if (sscanf(time_str.c_str(), "%d-%d-%dT%d:%d:%d", &Y, &M, &D, &h, &m, &s) == 6) {
-                    int a1 = (14 - M) / 12;
-                    int y1 = Y + 4800 - a1;
-                    int m1 = M + 12 * a1 - 3;
-                    int jdn_target = D + (153 * m1 + 2) / 5 + 365 * y1 + y1 / 4 - y1 / 100 + y1 / 400 - 32045;
-                    
-                    auto now_utc = id(esptime).utcnow();
-                    int a2 = (14 - now_utc.month) / 12;
-                    int y2 = now_utc.year + 4800 - a2;
-                    int m2 = now_utc.month + 12 * a2 - 3;
-                    int jdn_now = now_utc.day_of_month + (153 * m2 + 2) / 5 + 365 * y2 + y2 / 4 - y2 / 100 + y2 / 400 - 32045;
+              if (!time_str.empty()) {
+                float hours_remaining = atof(time_str.c_str());
 
-                    long diff_days = jdn_target - jdn_now;
-                    long target_sec_day = h * 3600 + m * 60 + s;
-                    long now_sec_day = now_utc.hour * 3600 + now_utc.minute * 60 + now_utc.second;
-                    long total_diff = (diff_days * 86400) + (target_sec_day - now_sec_day);
+                if (hours_remaining > 0 && hours_remaining < 168) {
+                  long remaining_seconds = (long)(hours_remaining * 3600.0f + 0.5f);
 
-                    if (total_diff > 0 && total_diff < 604800) {
-                      auto now_local = id(esptime).now();
-                      long local_start_seconds = now_local.hour * 3600 + now_local.minute * 60 + now_local.second;
-                      long local_end_seconds = local_start_seconds + total_diff;
-                      
-                      int end_h = (local_end_seconds / 3600) % 24;
-                      int end_m = (local_end_seconds % 3600) / 60;
+                  auto now_local = id(esptime).now();
+                  long now_seconds = now_local.hour * 3600 + now_local.minute * 60 + now_local.second;
+                  long end_seconds = (now_seconds + remaining_seconds) % 86400;
 
-                      char buf[16];
-                      snprintf(buf, sizeof(buf), "%d:%02d", end_h, end_m);
-                      
-                      if (status == "delayedstart") return std::string("-> ") + buf;
-                      return std::string(buf);
-                    } else {
-                      return "Gleich...";
-                    }
+                  int end_h = end_seconds / 3600;
+                  int end_m = (end_seconds % 3600) / 60;
+
+                  char buf[16];
+                  snprintf(buf, sizeof(buf), "%d:%02d", end_h, end_m);
+
+                  if (status == "delayedstart") return std::string("-> ") + buf;
+                  return std::string(buf);
                 } else {
-                  ESP_LOGE("time_parse", "Failed to parse time string: %s", time_str.c_str());
-                  return "Zeitfehler";
+                  return "Gleich...";
                 }
               }
               return "Läuft";
@@ -126,7 +108,7 @@ text_sensor:
 
   - platform: homeassistant
     id: washer_time_sensor
-    entity_id: sensor.waschtrockner_programm_endzeit
+    entity_id: sensor.waschtrockner_geschatzte_verbleibende_programmlaufzeit
     internal: true
     on_value: *update_display
 
