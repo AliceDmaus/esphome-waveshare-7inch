@@ -9,7 +9,8 @@ sensor:
       - lvgl.label.update:
           id: temp_aussen
           text: !lambda |-
-            static char buf[10];
+            if (std::isnan(x)) return "--";
+            static char buf[16];
             snprintf(buf, sizeof(buf), "%.1f°C", x);
             return buf;
 
@@ -21,7 +22,8 @@ sensor:
       - lvgl.label.update:
           id: alt_clock_label
           text: !lambda |-
-            static char buf[10];
+            if (std::isnan(x)) return "-- W";
+            static char buf[16];
             snprintf(buf, sizeof(buf), "%.0f W", x);
             return buf;
 
@@ -33,7 +35,8 @@ sensor:
       - lvgl.label.update:
           id: temp_wohnzimmer
           text: !lambda |-
-            static char buf[10];
+            if (std::isnan(x)) return "--";
+            static char buf[16];
             snprintf(buf, sizeof(buf), "%.1f°C", x);
             return buf;
 
@@ -104,7 +107,7 @@ text_sensor:
               return "Läuft";
             }
 
-            return status;
+            return "--";
 
   - platform: homeassistant
     id: washer_time_sensor
@@ -119,31 +122,39 @@ text_sensor:
     on_value:
       - lambda: |-
           std::string status = x;
-          if (status == "active") {
-             id(timer_timer_active) = true;
-          } else {
-             id(timer_timer_active) = false;
-             if (status == "idle") {
-               id(timer_remaining_seconds) = 0;
-             }
-          }
+          id(timer_timer_active) = (status == "active");
+          if (status == "idle") id(timer_finishes_at) = 0;
       - script.execute: update_timer_visibility
 
+  # finishes_at statt remaining: remaining wird von HA nur beim Start/Pausieren gesetzt
   - platform: homeassistant
-    id: timer_timer_remaining
+    id: timer_timer_finishes_at
     entity_id: timer.waveshare_display
-    attribute: remaining
+    attribute: finishes_at
     internal: true
     on_value:
       - lambda: |-
-          std::string time_str = x;
-          if (time_str.empty() || time_str == "None" || time_str == "unavailable") return;
+          // Format: 2026-11-06T19:10:00+00:00 (optional mit Sekundenbruchteilen)
+          int Y, M, D, h, m, s;
+          if (sscanf(x.c_str(), "%d-%d-%dT%d:%d:%d", &Y, &M, &D, &h, &m, &s) != 6) {
+            id(timer_finishes_at) = 0;
+            return;
+          }
 
-          int hours = 0, mins = 0, secs = 0;
-          if (sscanf(time_str.c_str(), "%d:%d:%d", &hours, &mins, &secs) == 3) {
-            id(timer_remaining_seconds) = hours * 3600 + mins * 60 + secs;
+          int y = Y - (M <= 2);
+          int era = (y >= 0 ? y : y - 399) / 400;
+          int yoe = y - era * 400;
+          int doy = (153 * (M + (M > 2 ? -3 : 9)) + 2) / 5 + D - 1;
+          int doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+          int64_t days = (int64_t) era * 146097 + doe - 719468;
+          int64_t epoch = days * 86400 + h * 3600 + m * 60 + s;
+
+          size_t tz = x.find_first_of("+-", 19);
+          if (tz != std::string::npos) {
+            int oh = 0, om = 0;
+            if (sscanf(x.c_str() + tz + 1, "%d:%d", &oh, &om) >= 1) {
+              int offset = oh * 3600 + om * 60;
+              epoch -= (x[tz] == '+') ? offset : -offset;
+            }
           }
-          else if (sscanf(time_str.c_str(), "%d:%d", &hours, &mins) == 2) {
-            id(timer_remaining_seconds) = hours * 3600 + mins * 60;
-          }
-      - script.execute: update_timer_visibility
+          id(timer_finishes_at) = epoch;

@@ -5,11 +5,12 @@ esp32:
   cpu_frequency: 240MHz
   framework:
     type: esp-idf
+    advanced:
+      flash_chip: generic
     sdkconfig_options:
       CONFIG_SPIRAM_FETCH_INSTRUCTIONS: "y"
       CONFIG_SPIRAM_RODATA: "y"
 
-# PSRAM Stabil auf 80MHz - optimized with 2025.12.0 improvements
 psram:
   mode: octal
   speed: 80MHz
@@ -42,7 +43,6 @@ captive_portal:
 web_server:
   port: 80
   version: 2
-  include_internal: true
   ota: false
 
 i2c:
@@ -57,34 +57,18 @@ ch422g:
 time:
   - platform: homeassistant
     id: esptime
+    on_time_sync:
+      - script.execute: update_clock
     on_time:
       - seconds: 0
         then:
-          # Uhrzeit (Bleibt gleich)
-          - lvgl.label.update:
-              id: time_label
-              text: !lambda |-
-                auto now = id(esptime).now();
-                if (!now.is_valid()) return "00:00";
-                static char time_str[6];
-                snprintf(time_str, sizeof(time_str), "%02d:%02d", now.hour, now.minute);
-                return time_str;
-
-          # DATUM (Neu: DD.MM.YYYY)
-          - lvgl.label.update:
-              id: date_label
-              text: !lambda |-
-                auto now = id(esptime).now();
-                if (!now.is_valid()) return "";
-                static char date_str[15];
-                // Format geändert zu: 01.01.2024
-                snprintf(date_str, sizeof(date_str), "%02d.%02d.%04d", now.day_of_month, now.month, now.year);
-                return date_str;
+          - script.execute: update_clock
 
 
 globals:
-  - id: timer_remaining_seconds
-    type: int
+  # UTC-Epoch, zu dem der HA-Timer abläuft (0 = unbekannt)
+  - id: timer_finishes_at
+    type: int64_t
     restore_value: no
     initial_value: '0'
 
@@ -94,6 +78,25 @@ globals:
     initial_value: 'false'
 
 script:
+  - id: update_clock
+    then:
+      - lvgl.label.update:
+          id: time_label
+          text: !lambda |-
+            auto now = id(esptime).now();
+            if (!now.is_valid()) return "00:00";
+            static char time_str[8];
+            snprintf(time_str, sizeof(time_str), "%02d:%02d", now.hour, now.minute);
+            return time_str;
+      - lvgl.label.update:
+          id: date_label
+          text: !lambda |-
+            auto now = id(esptime).now();
+            if (!now.is_valid()) return "";
+            static char date_str[16];
+            snprintf(date_str, sizeof(date_str), "%02d.%02d.%04d", now.day_of_month, now.month, now.year);
+            return date_str;
+
   - id: update_timer_visibility
     then:
       - lambda: |-
@@ -112,10 +115,6 @@ script:
 interval:
   - interval: 1s
     then:
-      - lambda: |-
-          if (id(timer_remaining_seconds) > 0 && id(timer_timer_active)) {
-            id(timer_remaining_seconds)--;
-          }
       - if:
           condition:
             lambda: 'return id(timer_timer_active);'
@@ -123,15 +122,16 @@ interval:
             - lvgl.label.update:
                 id: timer_timer_label
                 text: !lambda |-
-                  if (id(timer_remaining_seconds) <= 0) {
-                    return "Bereit";
-                  }
+                  if (!id(esptime).now().is_valid() || id(timer_finishes_at) == 0) return "--:--";
 
-                  int hours = id(timer_remaining_seconds) / 3600;
-                  int mins = (id(timer_remaining_seconds) % 3600) / 60;
-                  int secs = id(timer_remaining_seconds) % 60;
+                  int64_t remaining = id(timer_finishes_at) - (int64_t) id(esptime).timestamp_now();
+                  if (remaining <= 0) return "Bereit";
 
-                  static char buf[10];
+                  int hours = remaining / 3600;
+                  int mins = (remaining % 3600) / 60;
+                  int secs = remaining % 60;
+
+                  static char buf[20];
                   if (hours > 0) {
                     snprintf(buf, sizeof(buf), "%d:%02d:%02d", hours, mins, secs);
                   } else {

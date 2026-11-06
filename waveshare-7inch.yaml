@@ -17,15 +17,11 @@ esphome:
   name: main-display
   friendly_name: Main-Display
 
-  platformio_options:
-    board_upload.maximum_ram_size: 524288
-
   on_boot:
     priority: 600
     then:
       - delay: 500ms
       - script.execute: update_timer_visibility
-      - switch.turn_on: old_backlight_switch
       - light.turn_on:
           id: lcdbacklight
           brightness: 100%

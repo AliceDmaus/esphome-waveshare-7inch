@@ -30,18 +30,6 @@ light:
     default_transition_length: 0.5s
     gamma_correct: 1.8
 
-switch:
-  - platform: gpio
-    id: old_backlight_switch
-    internal: true
-    pin:
-      ch422g: ch422g_hub
-      number: 2
-      mode:
-        output: true
-      inverted: false
-    restore_mode: ALWAYS_ON
-
 touchscreen:
   platform: gt911
   id: my_touchscreen
@@ -57,3 +45,6 @@ display:
   - platform: mipi_rgb
     model: ESP32-S3-TOUCH-LCD-7-800X480
     id: waveshare_display
+    enable_pin:
+      ch422g: ch422g_hub
+      number: 2

@@ -3,9 +3,8 @@ lvgl:
   color_depth: 16
   bg_color: 0x000000
   bottom_layer:
-    bg_image_src: image_background # [1] Updated from deprecated disp_bg_image (2026.5)
-  # DISABLED: update_when_display_idle doesn't work with mipi_rgb displays (causes black screen)
-  # update_when_display_idle: true  # New in 2025.12.0 - syncs LVGL updates with display refresh
+    bg_image_src: image_background
+  # update_when_display_idle nicht aktivieren: führt bei mipi_rgb zu schwarzem Bild
 
   displays:
     - waveshare_display
@@ -21,27 +20,27 @@ lvgl:
       widgets:
         - label:
             id: time_label
-            text: "12:34"
+            text: "00:00"
             align: TOP_LEFT
             x: 30
             y: 10
-            text_font: roboto_clock_huge # [3]
+            text_font: roboto_clock_huge
             text_color: 0xFFFFFF
 
         - label:
             id: date_label
-            text: "01.01.2024"
+            text: ""
             align: TOP_RIGHT
             x: -30
             y: 50
-            text_font: roboto_64 # [3]
+            text_font: roboto_64
             text_color: 0xDDDDDD
 
         - obj:
             x: 20
             y: 140
             width: 370
-            height: 160            # Halbierte Höhe
+            height: 160
             bg_color: 0x000000
             bg_opa: 60%
             radius: 15
@@ -50,13 +49,13 @@ lvgl:
             border_opa: 100%
 
         - image:
-            id: weather_condition # Aktualisiert durch [5]
+            id: weather_condition
             src: weather_default
             x: 22
             y: 172
 
         - label:
-            id: temp_aussen       # Aktualisiert durch [5]
+            id: temp_aussen
             text: "--"
             x: 130
             y: 180
@@ -81,7 +80,7 @@ lvgl:
             y: 172
 
         - label:
-            id: temp_wohnzimmer   # Aktualisiert durch [5]
+            id: temp_wohnzimmer
             text: "--"
             x: 520
             y: 180
@@ -106,7 +105,7 @@ lvgl:
             y: 342
 
         - label:
-            id: washer_time       # Aktualisiert durch [5] (Annahme basierend auf Kontext)
+            id: washer_time
             text: "Bereit"
             x: 130
             y: 350

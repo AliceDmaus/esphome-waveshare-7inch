@@ -10,3 +10,9 @@ switch:
       - lvgl.pause: {show_snow: true}
     turn_off_action:
       - if: {condition: lvgl.is_paused, then: [lvgl.resume, lvgl.widget.redraw]}
+
+lvgl:
+  on_resume:
+    - switch.template.publish:
+        id: switch_antiburn
+        state: false
